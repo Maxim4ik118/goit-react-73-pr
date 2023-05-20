@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { StyledForm } from './BookForm.styled';
 
 /*
@@ -14,44 +14,42 @@ import { StyledForm } from './BookForm.styled';
 
 */
 
-export default class BookForm extends Component {
-  state = {
+export default function BookForm({ onSubmit, title }) {
+  const [formData, setFormData] = useState({
     title: '',
     author: '',
     year: '',
     genre: '', // "love" | "novel" | "fantasy"
     favourite: false,
     cover: 'https://images.gr-assets.com/books/1361975680l/2657.jpg',
-  };
+  });
 
-  handleChange = ({ target: { type, value, name, checked } }) => {
+  const handleChange = ({ target: { type, value, name, checked } }) => {
     if (type === 'checkbox') {
-      this.setState({ [name]: checked });
+      setFormData(prevState => ({ ...prevState, [name]: checked }));
       return;
     }
-
-    this.setState({ [name]: value });
+    setFormData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  handleSubmit = event => {
+  const handleSubmit = event => {
     event.preventDefault();
 
     const bookData = {
-      title: this.state.title,
-      author: this.state.author,
-      year: Number(this.state.year),
-      genre: this.state.genre, // "love" | "novel" | "fantasy"
-      favourite: this.state.favourite,
-      cover: this.state.cover,
+      title: formData.title,
+      author: formData.author,
+      year: Number(formData.year),
+      genre: formData.genre, // "love" | "novel" | "fantasy"
+      favourite: formData.favourite,
+      cover: formData.cover,
     };
-    this.props.onSubmit(bookData);
+    onSubmit(bookData);
 
-    this.reset()
-
+    reset();
   };
 
-  reset = () => {
-    this.setState({
+  const reset = () => {
+    setFormData({
       title: '',
       author: '',
       year: '',
@@ -59,91 +57,89 @@ export default class BookForm extends Component {
       favourite: false,
       cover: 'https://images.gr-assets.com/books/1361975680l/2657.jpg',
     });
-  } 
+  };
 
-  render() {
-    return (
-      <StyledForm onSubmit={this.handleSubmit}>
-        <h2>{this.props.title}</h2>
-        <label className="form-label">
-          <span>title:</span>
+  return (
+    <StyledForm onSubmit={handleSubmit}>
+      <h2>{title}</h2>
+      <label className="form-label">
+        <span>title:</span>
+        <input
+          type="text"
+          name="title"
+          value={formData.title}
+          required
+          onChange={handleChange}
+        />
+      </label>
+      <label className="form-label">
+        <span>author:</span>
+        <input
+          onChange={handleChange}
+          type="text"
+          name="author"
+          value={formData.author}
+          required
+        />
+      </label>
+      <label className="form-label">
+        <span>year:</span>
+        <input
+          onChange={handleChange}
+          type="text"
+          name="year"
+          value={formData.year}
+          required
+        />
+      </label>
+      <label className="form-label">
+        <span>genre:</span>
+        <span className="radio-group">
+          <span className="radio-label">Love</span>
           <input
-            type="text"
-            name="title"
-            value={this.state.title}
+            onChange={handleChange}
+            type="radio"
+            name="genre"
+            value="love"
+            checked={formData.genre === 'love'}
             required
-            onChange={this.handleChange}
           />
-        </label>
-        <label className="form-label">
-          <span>author:</span>
+        </span>
+        <span className="radio-group">
+          <span className="radio-label">Novel</span>
           <input
-            onChange={this.handleChange}
-            type="text"
-            name="author"
-            value={this.state.author}
+            onChange={handleChange}
+            type="radio"
+            name="genre"
             required
+            value="novel"
+            checked={formData.genre === 'novel'}
           />
-        </label>
-        <label className="form-label">
-          <span>year:</span>
+        </span>
+        <span className="radio-group">
+          <span className="radio-label">Fantasy</span>
           <input
-            onChange={this.handleChange}
-            type="text"
-            name="year"
-            value={this.state.year}
+            onChange={handleChange}
+            type="radio"
+            name="genre"
             required
+            value="fantasy"
+            checked={formData.genre === 'fantasy'}
           />
-        </label>
-        <label className="form-label">
-          <span>genre:</span>
-          <span className="radio-group">
-            <span className="radio-label">Love</span>
-            <input
-              onChange={this.handleChange}
-              type="radio"
-              name="genre"
-              value="love"
-              checked={this.state.genre === 'love'}
-              required
-            />
-          </span>
-          <span className="radio-group">
-            <span className="radio-label">Novel</span>
-            <input
-              onChange={this.handleChange}
-              type="radio"
-              name="genre"
-              required
-              value="novel"
-              checked={this.state.genre === 'novel'}
-            />
-          </span>
-          <span className="radio-group">
-            <span className="radio-label">Fantasy</span>
-            <input
-              onChange={this.handleChange}
-              type="radio"
-              name="genre"
-              required
-              value="fantasy"
-              checked={this.state.genre === 'fantasy'}
-            />
-          </span>
-        </label>
-        <label className="form-label">
-          <span>favourite:</span>
-          <input
-            onChange={this.handleChange}
-            type="checkbox"
-            name="favourite"
-            checked={this.state.favourite}
-          />
-        </label>
-        <button type="submit" className="form-btn">
-          Add book
-        </button>
-      </StyledForm>
-    );
-  }
+        </span>
+      </label>
+      <label className="form-label">
+        <span>favourite:</span>
+        <input
+          onChange={handleChange}
+          type="checkbox"
+          name="favourite"
+          checked={formData.favourite}
+        />
+      </label>
+      <button type="submit" className="form-btn">
+        Add book
+      </button>
+    </StyledForm>
+  );
 }

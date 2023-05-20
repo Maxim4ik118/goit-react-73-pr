@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 
 import BookForm from './BookForm/BookForm';
@@ -18,33 +18,30 @@ const toastConfig = {
   theme: 'light',
 };
 
-export class App extends Component {
-  state = {
-    books: basicBooks,
+function App() {
+  const [books, setBooks] = useState(basicBooks);
+
+  const deleteBook = bookTitle => {
+    setBooks(books.filter(book => book.title !== bookTitle));
   };
 
-  addBook = bookData => {
-    if (this.state.books.some(book => book.title === bookData.title)) {
+  const addBook = bookData => {
+    if (books.some(book => book.title === bookData.title)) {
       toast.error(
         `Book with title ${bookData.title} is already exists!`,
         toastConfig
       );
       return;
     }
-
-    this.setState(prevState => ({
-      books: [...prevState.books, bookData],
-    }));
-    // { ...{ books: [1,2,3,4] }, ...{ books: [5] } } -> { books: [5] }
+    setBooks(prevBooks => [...prevBooks, bookData]);
   };
-
-  render() {
-    return (
-      <div>
-        <BookForm title="add book" onSubmit={this.addBook} />
-        <BookList books={this.state.books}/>
-        <ToastContainer />
-      </div>
-    );
-  }
+  return (
+    <div>
+      <BookForm title="add book" onSubmit={addBook} />
+      <BookList books={books} onDelete={deleteBook} />
+      <ToastContainer />
+    </div>
+  );
 }
+
+export default App;
