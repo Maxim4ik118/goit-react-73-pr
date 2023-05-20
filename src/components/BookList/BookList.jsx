@@ -4,11 +4,11 @@ import { ReactComponent as IconHeart } from './heart.svg';
 
 import { StyledBook, StyledBookList } from './BookList.styled';
 
-function BookList({ books = [], onDelete, onEdit }) {
+function BookList({ books = [], onDelete, toggleFavorite, loadingProgress }) {
   return (
     <StyledBookList>
       {Array.isArray(books) &&
-        books.length &&
+        Boolean(books.length) &&
         books.map(book => {
           return (
             <StyledBook key={book.title}>
@@ -30,10 +30,12 @@ function BookList({ books = [], onDelete, onEdit }) {
               </p>
               <IconHeart
                 className={`book-icon ${book.favourite ? 'favourite' : ''}`}
+                onClick={() => toggleFavorite(book.title)}
               />
               <button
                 className="btn-delete"
-                onClick={() => onDelete(book.title)}
+                onClick={() => onDelete(book._id)}
+                disabled={loadingProgress}
               >
                 &times;
               </button>
