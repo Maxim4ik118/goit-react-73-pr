@@ -6,6 +6,15 @@ import { BookList } from './BookList';
 
 import booksJson from '../books.json';
 import { getAllBooks, deleteBookById } from '../services/api';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  selectBooks,
+  selectError,
+  selectFilter,
+  selectIsLoading,
+} from 'redux/selectors';
+import { setBooks, setError, setFilter, setLoading } from 'redux/booksSlice';
+import { Filter } from './Filter/Filter';
 
 const basicBooks = booksJson.books;
 const toastConfig = {
@@ -20,40 +29,45 @@ const toastConfig = {
 };
 
 function App() {
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // const [books, setBooks] = useState([]);
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState(null);
+  const books = useSelector(selectBooks);
+  const loading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
+  const filter = useSelector(selectFilter);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        setLoading(true);
+        dispatch(setLoading(true));
         const data = await getAllBooks();
-        setBooks(data);
+        dispatch(setBooks(data));
       } catch (err) {
-        setError(err.message);
+        dispatch(setError(err.message));
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     };
     fetchBooks();
-  }, []);
+  }, [dispatch]);
 
   const deleteBookRequest = async bookId => {
     try {
-      setError(null);
-      setLoading(true);
+      dispatch(setError(null));
+      dispatch(setLoading(true));
       const deletedBook = await deleteBookById(bookId);
-      setBooks(books.filter(book => book._id !== bookId));
+      dispatch(setBooks(books.filter(book => book._id !== bookId)));
       toast.success(
         `Book with title ${deletedBook.title} successfully deleted!`,
         toastConfig
       );
     } catch (err) {
-      setError(err.message);
+      dispatch(setError(err.message));
       toast.error(err.message, toastConfig);
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -71,27 +85,34 @@ function App() {
       );
       return;
     }
-    setBooks(prevBooks => [...prevBooks, bookData]);
+    dispatch(setBooks([...books, bookData]));
   };
 
   const toggleFavorite = bookTitle => {
-    setBooks(
-      books.map(book => {
-        if (book.title === bookTitle) {
-          return { ...book, favourite: !book.favourite };
-        }
-        return book;
-      })
+    dispatch(
+      setBooks(
+        books.map(book => {
+          if (book.title === bookTitle) {
+            return { ...book, favourite: !book.favourite };
+          }
+          return book;
+        })
+      )
     );
   };
 
+  const handleFilterChange = evt => dispatch(setFilter(evt.target.value));
+  const filteredBooks = books.filter(book =>
+    book.title.toLowerCase().includes(filter.toLowerCase())
+  ).sort((a, b) => b.favourite - a.favourite);
   return (
     <div>
       <BookForm title="add book" onSubmit={addBook} />
+      <Filter value={filter} onChange={handleFilterChange} />
       {loading && <p>Loading...</p>}
-      {Boolean(error !== null) && <p>Error: {error}</p>}
+      {error !== null && <p>Error: {error}</p>}
       <BookList
-        books={books}
+        books={filteredBooks}
         onDelete={deleteBookRequest}
         toggleFavorite={toggleFavorite}
         loadingProgress={loading}
